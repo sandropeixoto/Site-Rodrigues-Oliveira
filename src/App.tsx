@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import logo from './logo.jpg';
-import marca from './marca.jpg';
+const logo = import.meta.env.BASE_URL + 'logo.jpg';
+const marca = import.meta.env.BASE_URL + 'marca.jpg';
 import { 
   Scale, 
   Briefcase, 
