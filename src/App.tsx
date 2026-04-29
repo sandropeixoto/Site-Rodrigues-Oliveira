@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-const logo = import.meta.env.BASE_URL + 'logo.jpg';
-const marca = import.meta.env.BASE_URL + 'marca.jpg';
 import { 
   Scale, 
   Briefcase, 
@@ -16,6 +14,9 @@ import {
   Facebook,
   Instagram
 } from 'lucide-react';
+
+const logo = import.meta.env.BASE_URL + 'logo.jpg';
+const marca = import.meta.env.BASE_URL + 'marca.jpg';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
