@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { 
   Scale, 
   Briefcase, 
@@ -17,6 +20,7 @@ import {
 
 const logo = import.meta.env.BASE_URL + 'logo.jpg';
 const marca = import.meta.env.BASE_URL + 'marca.jpg';
+const reuniaoAtendimento = import.meta.env.BASE_URL + 'reuniao-atendimento.jpg';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -33,9 +37,46 @@ const staggerContainer = {
   }
 };
 
+const WhatsappIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className={className}
+  >
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+  </svg>
+);
+
+const contactSchema = z.object({
+  name: z.string().min(3, { message: 'Nome deve ter no mínimo 3 caracteres' }),
+  email: z.string().email({ message: 'E-mail inválido' }),
+  phone: z.string().min(10, { message: 'Telefone inválido (mínimo 10 dígitos)' }),
+  area: z.string().min(1, { message: 'Selecione uma área' }),
+  message: z.string().min(10, { message: 'A mensagem deve ter no mínimo 10 caracteres' }),
+});
+
+type ContactFormData = z.infer<typeof contactSchema>;
+
 export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting, isSubmitSuccessful },
+    reset
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema)
+  });
+
+  const onSubmit = async (data: ContactFormData) => {
+    // Simulating API call
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    console.log("Form data sent:", data);
+    reset();
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -190,24 +231,23 @@ export default function App() {
       <section id="about" className="py-24 bg-slate-50 px-6 md:px-12 border-y border-slate-100">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-16 md:gap-24 items-center">
           <motion.div 
-            className="flex-1 w-full"
+            className="flex-1 w-full relative"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeIn}
           >
-            <div className="grid grid-cols-2 gap-4">
+            <div className="relative rounded-[3rem] overflow-hidden shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-tr from-brand-navy/50 via-brand-navy/10 to-brand-gold/30 mix-blend-multiply z-10 pointer-events-none"></div>
               <img 
-                src="https://images.unsplash.com/photo-1505664173691-a2817882200e?q=80&w=1000&auto=format&fit=crop" 
-                alt="Escritório" 
-                className="w-full h-64 object-cover rounded-sm mt-8 object-left"
-              />
-              <img 
-                src="https://images.unsplash.com/photo-1450101499163-c8848c66cb85?q=80&w=1000&auto=format&fit=crop" 
-                alt="Contrato Jurídico" 
-                className="w-full h-64 object-cover rounded-sm"
+                src={reuniaoAtendimento} 
+                alt="Reunião de Atendimento" 
+                className="w-full h-[400px] md:h-[500px] object-cover transition-transform duration-700 hover:scale-105"
               />
             </div>
+            {/* Elementos Decorativos */}
+            <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-brand-gold rounded-full mix-blend-multiply opacity-20 blur-2xl -z-10"></div>
+            <div className="absolute -top-6 -right-6 w-40 h-40 bg-brand-navy rounded-full mix-blend-multiply opacity-10 blur-2xl -z-10"></div>
           </motion.div>
           
           <motion.div 
@@ -375,67 +415,131 @@ export default function App() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+              <AnimatePresence>
+                {isSubmitSuccessful && (
+                  <motion.div 
+                    key="success"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="bg-green-50 text-green-800 p-4 rounded-sm border border-green-200 text-sm font-medium"
+                  >
+                    Sua mensagem foi enviada com sucesso! Entraremos em contato em breve.
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-2">Nome Completo</label>
-                <input 
+                <motion.input 
                   type="text" 
                   id="name" 
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-brand-navy/20 focus:border-brand-navy transition-all text-slate-800"
+                  {...register('name')}
+                  animate={errors.name ? { x: [-5, 5, -5, 5, 0] } : {}}
+                  transition={{ duration: 0.4 }}
+                  className={`w-full px-4 py-3 bg-slate-50 border ${errors.name ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500' : 'border-slate-200 focus:ring-brand-navy/20 focus:border-brand-navy'} rounded-sm focus:outline-none focus:ring-2 transition-all text-slate-800`}
                   placeholder="Seu nome"
                 />
+                {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>}
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">E-mail</label>
-                  <input 
+                  <motion.input 
                     type="email" 
                     id="email" 
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-brand-navy/20 focus:border-brand-navy transition-all text-slate-800"
+                    {...register('email')}
+                    animate={errors.email ? { x: [-5, 5, -5, 5, 0] } : {}}
+                    transition={{ duration: 0.4 }}
+                    className={`w-full px-4 py-3 bg-slate-50 border ${errors.email ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500' : 'border-slate-200 focus:ring-brand-navy/20 focus:border-brand-navy'} rounded-sm focus:outline-none focus:ring-2 transition-all text-slate-800`}
                     placeholder="voce@email.com"
                   />
+                  {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
                 </div>
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-2">Telefone</label>
-                  <input 
+                  <motion.input 
                     type="tel" 
                     id="phone" 
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-brand-navy/20 focus:border-brand-navy transition-all text-slate-800"
+                    {...register('phone')}
+                    animate={errors.phone ? { x: [-5, 5, -5, 5, 0] } : {}}
+                    transition={{ duration: 0.4 }}
+                    className={`w-full px-4 py-3 bg-slate-50 border ${errors.phone ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500' : 'border-slate-200 focus:ring-brand-navy/20 focus:border-brand-navy'} rounded-sm focus:outline-none focus:ring-2 transition-all text-slate-800`}
                     placeholder="(91) 99999-9999"
                   />
+                  {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone.message}</p>}
                 </div>
               </div>
 
               <div>
                 <label htmlFor="area" className="block text-sm font-medium text-slate-700 mb-2">Área de Interesse</label>
-                <select id="area" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-brand-navy/20 focus:border-brand-navy transition-all text-slate-800">
+                <motion.select 
+                  id="area" 
+                  {...register('area')}
+                  animate={errors.area ? { x: [-5, 5, -5, 5, 0] } : {}}
+                  transition={{ duration: 0.4 }}
+                  className={`w-full px-4 py-3 bg-slate-50 border ${errors.area ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500' : 'border-slate-200 focus:ring-brand-navy/20 focus:border-brand-navy'} rounded-sm focus:outline-none focus:ring-2 transition-all text-slate-800`}
+                >
                   <option value="">Selecione uma área</option>
                   <option value="civel">Cível</option>
                   <option value="trabalhista">Trabalhista</option>
                   <option value="previdenciario">Previdenciário</option>
                   <option value="administrativo">Administrativo</option>
                   <option value="outro">Outro / Não sei informar</option>
-                </select>
+                </motion.select>
+                {errors.area && <p className="mt-1 text-sm text-red-500">{errors.area.message}</p>}
               </div>
 
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-slate-700 mb-2">Mensagem</label>
-                <textarea 
+                <motion.textarea 
                   id="message" 
                   rows={4} 
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-brand-navy/20 focus:border-brand-navy transition-all text-slate-800 resize-none"
+                  {...register('message')}
+                  animate={errors.message ? { x: [-5, 5, -5, 5, 0] } : {}}
+                  transition={{ duration: 0.4 }}
+                  className={`w-full px-4 py-3 bg-slate-50 border ${errors.message ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500' : 'border-slate-200 focus:ring-brand-navy/20 focus:border-brand-navy'} rounded-sm focus:outline-none focus:ring-2 transition-all text-slate-800 resize-none`}
                   placeholder="Conte-nos brevemente o seu caso..."
-                ></textarea>
+                ></motion.textarea>
+                {errors.message && <p className="mt-1 text-sm text-red-500">{errors.message.message}</p>}
               </div>
 
-              <button type="submit" className="w-full py-4 bg-brand-gold text-white font-medium rounded-sm hover:opacity-90 transition-opacity">
-                Enviar Mensagem
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full py-4 bg-brand-gold text-white font-medium rounded-sm hover:opacity-90 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {isSubmitting ? (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                  />
+                ) : (
+                  "Enviar Mensagem"
+                )}
               </button>
             </form>
           </motion.div>
         </div>
       </section>
+
+      {/* Floating WhatsApp Button */}
+      <motion.a
+        href="https://wa.me/5591986270550?text=Olá,%20gostaria%20de%20agendar%20uma%20consulta."
+        target="_blank"
+        rel="noreferrer"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-[0_4px_14px_0_rgba(37,211,102,0.39)] hover:shadow-[0_6px_20px_rgba(37,211,102,0.23)] transition-all"
+        aria-label="Contato via WhatsApp"
+      >
+        <WhatsappIcon className="w-8 h-8" />
+      </motion.a>
 
       {/* Footer */}
       <footer className="bg-black py-12 px-6 md:px-12 text-slate-400 border-t border-slate-800">
