@@ -8,6 +8,7 @@ import {
   Briefcase, 
   ShieldCheck, 
   Landmark,
+  Calculator,
   Phone,
   Mail,
   MapPin,
@@ -61,21 +62,50 @@ type ContactFormData = z.infer<typeof contactSchema>;
 export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, isSubmitSuccessful },
+    formState: { errors, isSubmitting },
     reset
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema)
   });
 
   const onSubmit = async (data: ContactFormData) => {
-    // Simulating API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Form data sent:", data);
-    reset();
+    setSubmitStatus('idle');
+    setErrorMessage('');
+    
+    try {
+      const response = await fetch('https://mail-proxy-has46dauxa-rj.a.run.app/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          message: `Área de Interesse: ${data.area}\n\nMensagem:\n${data.message}`,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Erro ao enviar mensagem');
+      }
+
+      setSubmitStatus('success');
+      reset();
+      
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => setSubmitStatus('idle'), 5000);
+    } catch (err: any) {
+      console.error(err);
+      setSubmitStatus('error');
+      setErrorMessage(err.message || 'Ocorreu um erro ao enviar sua mensagem. Tente novamente mais tarde.');
+    }
   };
 
   useEffect(() => {
@@ -275,7 +305,7 @@ export default function App() {
                 <p className="text-sm font-medium text-brand-gold uppercase tracking-wide mb-3">OAB/PA 21.042</p>
                 <div className="flex items-center gap-2 text-slate-600">
                   <Phone className="w-4 h-4 text-brand-gold" />
-                  <span className="text-sm font-medium">WhatsApp: (91) 98232-3866</span>
+                  <span className="text-sm font-medium">WhatsApp: (91) 99133-7615</span>
                 </div>
               </div>
 
@@ -307,7 +337,7 @@ export default function App() {
             <div className="w-16 h-[2px] bg-brand-gold mx-auto mt-6"></div>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
                 icon: Briefcase,
@@ -328,6 +358,11 @@ export default function App() {
                 icon: Scale,
                 title: 'Administrativo',
                 description: 'Sua segurança perante o Poder Público. Assessoria jurídica contínua em licitações, contratos administrativos, processos disciplinares e defesa contra abusos estatais.'
+              },
+              {
+                icon: Calculator,
+                title: 'Tributário',
+                description: 'Garantia de conformidade e justiça fiscal. Especialista na área de Imposto de Renda Pessoa Física, orientação em malhas fiscais, isenções, contestações e planejamento tributário.'
               }
             ].map((service, index) => (
               <motion.div 
@@ -375,7 +410,7 @@ export default function App() {
                 </div>
                 <div>
                   <h4 className="text-sm uppercase tracking-wider text-slate-400 font-medium mb-1">Telefone Fixo</h4>
-                  <p className="text-lg">(91) 98627-0550</p>
+                  <p className="text-lg">(91) 99133-7615</p>
                   <p className="text-slate-400 text-sm mt-1">Atendimento em horário comercial</p>
                 </div>
               </div>
@@ -417,7 +452,7 @@ export default function App() {
           >
             <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
               <AnimatePresence>
-                {isSubmitSuccessful && (
+                {submitStatus === 'success' && (
                   <motion.div 
                     key="success"
                     initial={{ opacity: 0, y: -10 }}
@@ -426,6 +461,17 @@ export default function App() {
                     className="bg-green-50 text-green-800 p-4 rounded-sm border border-green-200 text-sm font-medium"
                   >
                     Sua mensagem foi enviada com sucesso! Entraremos em contato em breve.
+                  </motion.div>
+                )}
+                {submitStatus === 'error' && (
+                  <motion.div 
+                    key="error"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="bg-red-50 text-red-800 p-4 rounded-sm border border-red-200 text-sm font-medium"
+                  >
+                    {errorMessage}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -487,6 +533,7 @@ export default function App() {
                   <option value="trabalhista">Trabalhista</option>
                   <option value="previdenciario">Previdenciário</option>
                   <option value="administrativo">Administrativo</option>
+                  <option value="tributario">Tributário</option>
                   <option value="outro">Outro / Não sei informar</option>
                 </motion.select>
                 {errors.area && <p className="mt-1 text-sm text-red-500">{errors.area.message}</p>}
@@ -528,7 +575,7 @@ export default function App() {
 
       {/* Floating WhatsApp Button */}
       <motion.a
-        href="https://wa.me/5591986270550?text=Olá,%20gostaria%20de%20agendar%20uma%20consulta."
+        href="https://wa.me/5591991337615?text=Olá,%20gostaria%20de%20marcar%20um%20atendimento."
         target="_blank"
         rel="noreferrer"
         initial={{ scale: 0 }}
